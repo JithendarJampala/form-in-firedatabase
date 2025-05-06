@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form in Firebase</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      display: block;
+    }
+    #output {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Save Your Details</h1>
+
+  <input type="text" id="name" placeholder="Enter your name">
+  <input type="text" id="color" placeholder="Enter your favorite color">
+
+  <button onclick="saveData()">Save</button>
+  <button onclick="recallData()">Recall</button>
+
+  <p id="output">No data yet.</p>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+
+  <script>
+    // ✅ Replace this with your actual Firebase config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "form-in-firedatabase.firebaseapp.com",
+      databaseURL: "https://form-in-firedatabase-default-rtdb.firebaseio.com",
+      projectId: "form-in-firedatabase",
+      storageBucket: "form-in-firedatabase.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Save function
+    function saveData() {
+      const name = document.getElementById('name').value;
+      const color = document.getElementById('color').value;
+
+      if (name && color) {
+        database.ref("users/" + name).set({
+          favoriteColor: color
+        }).then(() => {
+          alert("Data saved!");
+        }).catch(error => {
+          alert("Error: " + error);
+        });
+      } else {
+        alert("Please fill in both fields.");
+      }
+    }
+
+    // Recall function
+    function recallData() {
+      const name = document.getElementById('name').value;
+
+      if (name) {
+        database.ref("users/" + name).once('value').then(snapshot => {
+          const data = snapshot.val();
+          if (data) {
+            document.getElementById('output').textContent = `Hello ${name}, your favorite color is ${data.favoriteColor}.`;
+          } else {
+            document.getElementById('output').textContent = `No data found for ${name}.`;
+          }
+        });
+      } else {
+        alert("Enter a name to recall data.");
+      }
+    }
+  </script>
+
+</body>
+</html>
