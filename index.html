@@ -37,58 +37,69 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
   <script>
-    // ✅ Replace this with your actual Firebase config
-    const firebaseConfig = {
-  apiKey: "AIzaSyExample123456",
-  authDomain: "form-in-firedatabase.firebaseapp.com",
-  databaseURL: "https://form-in-firedatabase-default-rtdb.firebaseio.com",
-  projectId: "form-in-firedatabase",
-  storageBucket: "form-in-firedatabase.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123456"
-};
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "form-in-firedatabase.firebaseapp.com",
+    databaseURL: "https://form-in-firedatabase-default-rtdb.firebaseio.com",
+    projectId: "form-in-firedatabase",
+    storageBucket: "form-in-firedatabase.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
 
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+  function saveData() {
+    const name = document.getElementById('name').value;
+    const color = document.getElementById('color').value;
 
-    // Save function
-    function saveData() {
-      const name = document.getElementById('name').value;
-      const color = document.getElementById('color').value;
-
-      if (name && color) {
-        database.ref("users/" + name).set({
-          favoriteColor: color
-        }).then(() => {
+    if (name && color) {
+      console.log("Saving:", name, color);
+      database.ref("users/" + name).set({ favoriteColor: color })
+        .then(() => {
+          localStorage.setItem("savedName", name);
           alert("Data saved!");
-        }).catch(error => {
-          alert("Error: " + error);
-        });
-      } else {
-        alert("Please fill in both fields.");
-      }
+        })
+        .catch(error => alert("Save error: " + error));
+    } else {
+      alert("Please fill in both fields.");
     }
+  }
 
-    // Recall function
-    function recallData() {
-      const name = document.getElementById('name').value;
-
-      if (name) {
-        database.ref("users/" + name).once('value').then(snapshot => {
-          const data = snapshot.val();
-          if (data) {
-            document.getElementById('output').textContent = `Hello ${name}, your favorite color is ${data.favoriteColor}.`;
-          } else {
-            document.getElementById('output').textContent = `No data found for ${name}.`;
-          }
-        });
-      } else {
-        alert("Enter a name to recall data.");
-      }
+  function recallData() {
+    const name = document.getElementById('name').value;
+    if (name) {
+      fetchColor(name);
+    } else {
+      alert("Enter a name to recall data.");
     }
-  </script>
+  }
+
+  function fetchColor(name) {
+    console.log("Fetching data for:", name);
+    database.ref("users/" + name).once('value').then(snapshot => {
+      const data = snapshot.val();
+      console.log("Fetched:", data);
+      if (data) {
+        document.getElementById('output').textContent = `Hello ${name}, your favorite color is ${data.favoriteColor}.`;
+      } else {
+        document.getElementById('output').textContent = `No data found for ${name}.`;
+      }
+    }).catch(err => {
+      console.error("Fetch error:", err);
+    });
+  }
+
+  window.onload = function () {
+    const savedName = localStorage.getItem("savedName");
+    if (savedName) {
+      document.getElementById('name').value = savedName;
+      fetchColor(savedName);
+    }
+  };
+</script>
+
 
 </body>
 </html>
